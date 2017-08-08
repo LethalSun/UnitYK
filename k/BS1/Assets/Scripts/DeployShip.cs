@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DeployShip : MonoBehaviour {
+public class DeployShip : MonoBehaviour
+{
 
     public GameObject ship1;
     public GameObject ship2;
@@ -13,13 +14,16 @@ public class DeployShip : MonoBehaviour {
 
     private GameObject selectedShip = null;
     public int shipNum = 0;
+    public int shipNum2 = 0;
     private GameObject target;
+    private GameObject targetBefore;
     public GameObject initTile;
     private GameObject[] ships;
     private int rotaion = 1;
-
+    
     private void Start()
     {
+        targetBefore = initTile;
         ships = new GameObject[5];
         ships[0] = ship1;
         ships[1] = ship2;
@@ -34,12 +38,14 @@ public class DeployShip : MonoBehaviour {
         GameObject target = null;
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit,Mathf.Infinity) == true)
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity) == true)
         {
+            
             target = hit.collider.gameObject;
-            if(target.layer == 31)
+            if (target.layer == 31)
             {
-
+                Debug.Log("Hit");
+                targetBefore = target;
                 return target;
             }
             target = null;
@@ -51,12 +57,11 @@ public class DeployShip : MonoBehaviour {
     void Checkselectedship()
     {
 
-        if(Input.GetKeyDown(KeyCode.Alpha1))
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-
             MakeShip(1);
         }
-        else if(Input.GetKeyDown(KeyCode.Alpha2))
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             MakeShip(2);
         }
@@ -72,45 +77,85 @@ public class DeployShip : MonoBehaviour {
         {
             MakeShip(5);
         }
-        else if(Input.GetKeyDown(KeyCode.Escape))
+        else if (Input.GetKeyDown(KeyCode.Escape))
         {
             shipNum = 0;
-            if(selectedShip != null)
+            if (selectedShip != null)
             {
                 Destroy(selectedShip);
             }
         }
     }
+
+    public void SelectShip1()
+    {
+        shipNum2 = 1;
+        MakeShip(shipNum2);
+    }
+
+    public void SelectShip2()
+    {
+        shipNum2 = 2;
+        MakeShip(shipNum2);
+    }
+
+    public void SelectShip3()
+    {
+        shipNum2 = 3;
+        MakeShip(shipNum2);
+    }
+
+    public void SelectShip4()
+    {
+        shipNum2 = 4;
+        MakeShip(shipNum2);
+    }
+
+    public void SelectShip5()
+    {
+        shipNum2 = 5;
+        MakeShip(shipNum2);
+    }
+
     void Update()
     {
-        Checkselectedship();
+        //Checkselectedship();
+
+        Debug.Log("shipnum =" + shipNum2);
+        //MakeShip(shipNum2);
         CheckRotation();
+        target = GetCursorObject();
         if (selectedShip == null)
         {
+            Debug.Log("null");
             return;
         }
 
-        target = GetCursorObject();
+       
 
-        if(target == null)
+        if (target == null)
         {
-            target = initTile;
+            target = targetBefore;
+
         }
 
         UpdateShipPosition();
 
-        if (Input.GetButtonDown("Fire1"))
+        if (Input.GetButtonDown("Fire2"))
         {
             if (target != null)
             {
                 target.GetComponent<ShipManager>().shipOnTheTile = selectedShip;
                 selectedShip = null;
+                shipNum = 0;
             }
         }
     }
 
     void MakeShip(int shipN)
     {
+
+
         if (shipNum == shipN)
         {
             return;
@@ -119,34 +164,38 @@ public class DeployShip : MonoBehaviour {
         {
 
             shipNum = shipN;
-            Destroy(selectedShip);
+            if(selectedShip !=null)
+            {
+                Destroy(selectedShip);
+            }
             selectedShip = Instantiate(ships[shipNum - 1]) as GameObject;
         }
     }
 
     void UpdateShipPosition()
     {
-        if(rotaion ==1)
+
+        if (rotaion == 1)
         {
-            selectedShip.transform.rotation = Quaternion.Euler(0.0f,0.0f,0.0f);
+            selectedShip.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
             selectedShip.transform.position = new Vector3(target.transform.position.x + selectedShip.GetComponent<ShipOffset>().offset, selectedShip.transform.position.y, target.transform.position.z);
         }
-        else if( rotaion ==2)
+        else if (rotaion == 2)
         {
             selectedShip.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
-            selectedShip.transform.position = new Vector3(target.transform.position.x , selectedShip.transform.position.y, target.transform.position.z + selectedShip.GetComponent<ShipOffset>().offset);
+            selectedShip.transform.position = new Vector3(target.transform.position.x, selectedShip.transform.position.y, target.transform.position.z + selectedShip.GetComponent<ShipOffset>().offset);
 
         }
-        else if(rotaion ==3)
+        else if (rotaion == 3)
         {
             selectedShip.transform.rotation = Quaternion.Euler(0.0f, 180.0f, 0.0f);
             selectedShip.transform.position = new Vector3(target.transform.position.x - selectedShip.GetComponent<ShipOffset>().offset, selectedShip.transform.position.y, target.transform.position.z);
 
         }
-        else if(rotaion == 4)
+        else if (rotaion == 4)
         {
             selectedShip.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
-            selectedShip.transform.position = new Vector3(target.transform.position.x , selectedShip.transform.position.y, target.transform.position.z - selectedShip.GetComponent<ShipOffset>().offset);
+            selectedShip.transform.position = new Vector3(target.transform.position.x, selectedShip.transform.position.y, target.transform.position.z - selectedShip.GetComponent<ShipOffset>().offset);
 
         }
     }
@@ -155,7 +204,7 @@ public class DeployShip : MonoBehaviour {
     {
         if (Input.GetAxis("Mouse ScrollWheel") < 0)
         {
-            Debug.Log("wheel"+ rotaion);
+            Debug.Log("wheel" + rotaion);
             if (rotaion == 4)
             {
                 rotaion = 0;
