@@ -44,7 +44,7 @@ public class DeployShip : MonoBehaviour
             target = hit.collider.gameObject;
             if (target.layer == 31)
             {
-                Debug.Log("Hit");
+         //       Debug.Log("Hit");
                 targetBefore = target;
                 return target;
             }
@@ -121,17 +121,19 @@ public class DeployShip : MonoBehaviour
     {
         //Checkselectedship();
 
-        Debug.Log("shipnum =" + shipNum2);
+        //Debug.Log("shipnum =" + shipNum2);
         //MakeShip(shipNum2);
-        CheckRotation();
-        target = GetCursorObject();
+
         if (selectedShip == null)
         {
-            Debug.Log("null");
+           // Debug.Log("null");
             return;
         }
 
-       
+        CheckRotation();
+        target = GetCursorObject();
+
+
 
         if (target == null)
         {

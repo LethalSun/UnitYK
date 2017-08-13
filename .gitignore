@@ -9,7 +9,6 @@
 /yoo/[Bb]uild/
 /yoo/[Bb]uilds/
 /yoo/Assets/AssetStoreTools*
-
 /k/BS1/[Ll]ibrary/
 /k/BS1/[Tt]emp/
 /k/BS1/[Oo]bj/
@@ -18,6 +17,8 @@
 /k/BS1/Assets/AssetStoreTools*
 /k/BS1/Assets/MyResources/
 /k/BS1/bs000_Data/
+/k/BS1/bs000.exe
+
 # Visual Studio 2015 cache directory
 /.vs/
 

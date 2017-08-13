@@ -9,11 +9,11 @@ public class CollideManager : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Triggered");
+        //Debug.Log("Triggered");
         if(other.gameObject.tag == "Ship")
         {
             gameObject.GetComponent<ShipManager>().shipOnTheTile = other.gameObject;
-            Debug.Log("ship deploy");
+            //Debug.Log("ship deploy");
 
         }
        
@@ -21,7 +21,7 @@ public class CollideManager : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        Debug.Log("Triggered exit");
+        //Debug.Log("Triggered exit");
         if (other.gameObject.tag == "Ship")
         {
             gameObject.GetComponent<ShipManager>().shipOnTheTile = null;
