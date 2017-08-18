@@ -37,8 +37,10 @@ public class DeployShip : MonoBehaviour
         RaycastHit hit;
         GameObject target = null;
 
+        int rayMask = 1 << 31;
+
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity) == true)
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, rayMask) == true)
         {
             
             target = hit.collider.gameObject;
@@ -95,6 +97,7 @@ public class DeployShip : MonoBehaviour
 
     public void SelectShip2()
     {
+        Debug.Log("shipnum =" + shipNum2);
         shipNum2 = 2;
         MakeShip(shipNum2);
     }
@@ -119,14 +122,9 @@ public class DeployShip : MonoBehaviour
 
     void Update()
     {
-        //Checkselectedship();
-
-        //Debug.Log("shipnum =" + shipNum2);
-        //MakeShip(shipNum2);
 
         if (selectedShip == null)
         {
-           // Debug.Log("null");
             return;
         }
 
@@ -171,6 +169,8 @@ public class DeployShip : MonoBehaviour
                 Destroy(selectedShip);
             }
             selectedShip = Instantiate(ships[shipNum - 1]) as GameObject;
+            //TODO:
+            //selectedShip.
         }
     }
 
@@ -180,24 +180,24 @@ public class DeployShip : MonoBehaviour
         if (rotaion == 1)
         {
             selectedShip.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
-            selectedShip.transform.position = new Vector3(target.transform.position.x + selectedShip.GetComponent<ShipOffset>().offset, selectedShip.transform.position.y, target.transform.position.z);
+            selectedShip.transform.position = new Vector3(target.transform.position.x + selectedShip.GetComponent<ShipProperties>().shipOffset, selectedShip.transform.position.y, target.transform.position.z);
         }
         else if (rotaion == 2)
         {
             selectedShip.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
-            selectedShip.transform.position = new Vector3(target.transform.position.x, selectedShip.transform.position.y, target.transform.position.z + selectedShip.GetComponent<ShipOffset>().offset);
+            selectedShip.transform.position = new Vector3(target.transform.position.x, selectedShip.transform.position.y, target.transform.position.z + selectedShip.GetComponent<ShipProperties>().shipOffset);
 
         }
         else if (rotaion == 3)
         {
             selectedShip.transform.rotation = Quaternion.Euler(0.0f, 180.0f, 0.0f);
-            selectedShip.transform.position = new Vector3(target.transform.position.x - selectedShip.GetComponent<ShipOffset>().offset, selectedShip.transform.position.y, target.transform.position.z);
+            selectedShip.transform.position = new Vector3(target.transform.position.x - selectedShip.GetComponent<ShipProperties>().shipOffset, selectedShip.transform.position.y, target.transform.position.z);
 
         }
         else if (rotaion == 4)
         {
             selectedShip.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
-            selectedShip.transform.position = new Vector3(target.transform.position.x, selectedShip.transform.position.y, target.transform.position.z - selectedShip.GetComponent<ShipOffset>().offset);
+            selectedShip.transform.position = new Vector3(target.transform.position.x, selectedShip.transform.position.y, target.transform.position.z - selectedShip.GetComponent<ShipProperties>().shipOffset);
 
         }
     }

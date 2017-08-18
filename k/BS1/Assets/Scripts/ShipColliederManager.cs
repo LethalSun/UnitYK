@@ -2,30 +2,27 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CollideManager : MonoBehaviour
+public class ShipColliederManager : MonoBehaviour
 {
-
-    private Color normColor;
 
     private void OnTriggerEnter(Collider other)
     {
         //Debug.Log("Triggered");
-        if(other.gameObject.tag == "Ship")
+        if (other.gameObject.tag == "Ship")
         {
             gameObject.GetComponent<ShipManager>().shipOnTheTile = other.gameObject;
-            Debug.Log("ship enter");
+            //Debug.Log("ship enter");
 
         }
-       
+
     }
 
     private void OnTriggerExit(Collider other)
     {
-        //Debug.Log("Triggered exit");
         if (other.gameObject.tag == "Ship")
         {
             gameObject.GetComponent<ShipManager>().shipOnTheTile = null;
-            Debug.Log("ship exit");
+            //Debug.Log("ship exit");
         }
     }
 }
