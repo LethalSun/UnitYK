@@ -110,6 +110,7 @@ public class DeployShip : MonoBehaviour
         {
             Debug.Log("ship null");
             selectedShip = ClickedShip();
+            selectedShip.GetComponent<ShipProperties>().isDeployed = false;
             return;
         }
 
@@ -130,7 +131,23 @@ public class DeployShip : MonoBehaviour
         {
             if (target != null)
             {
+                if(selectedShip.GetComponent<ShipProperties>().isEncounterEdge == true 
+                    || selectedShip.GetComponent<ShipProperties>().isEncounterShip == true)
+                {
+                    return;
+                }
+
+                selectedShip.GetComponent<ShipProperties>().isDeployed = true;
+
                 target.GetComponent<ShipManager>().shipOnTheTile = selectedShip;
+                var randerer = selectedShip.GetComponent<ChangeShipColor>().rs;
+                var mat = selectedShip.GetComponent<ChangeShipColor>().mats;
+
+                for (int i = 0; i < randerer.Length; ++i)
+                {
+                    randerer[i].material = mat[2];
+                }
+
                 selectedShip.GetComponent<ShipProperties>().isDeployed = true;
                 selectedShip = null;
                 shipNum = 0;

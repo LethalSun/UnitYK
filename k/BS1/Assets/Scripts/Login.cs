@@ -12,26 +12,86 @@ public class Login : MonoBehaviour
 
     public InputField inputFieldID;
     public InputField inputFieldPW;
+    public Text statetext;
 
     public string ID;
     public string PW;
 
+    string notLoginedStr;
+    string logingigStr;
+
+    float accumulatedTime = 0.0f;
+
+    enum State
+    {
+        NOTLOGINED = 1,
+        LOGINGING = 2,
+        LOGINED = 3,
+    }
+
+    State state = State.NOTLOGINED;
+
+    private void Start()
+    {
+        notLoginedStr = "Please Enter ID and PW.";
+        logingigStr = "Loading";
+    }
+
+    
+
+    private void Update()
+    {
+        switch(state)
+        {
+            case State.NOTLOGINED :
+                {
+                    statetext.text = notLoginedStr;
+                    break;
+                }
+            case State.LOGINGING:
+                {
+                    accumulatedTime += Time.deltaTime;
+                    
+                    if(accumulatedTime <= 0.33f)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        accumulatedTime = 0.0f;
+                    }
+
+                    if (logingigStr.Length < 12)
+                    {
+                        logingigStr += ".";
+                    }
+                    else
+                    {
+                        logingigStr = logingigStr.Substring(0, 7);
+                    }
+                    statetext.text = logingigStr;
+                    break;
+                }
+            case State.LOGINED:
+                {
+                    MakeLogin();
+                    break;
+                }
+            default:
+                break;
+
+        }
+    }
+
     public void IDFieldChanged(string id)
     {
-        string test = "test";
-        Debug.Log(test);
-
         ID = id;
-        Debug.Log(ID);
     }
 
 
     public void PWFieldChanged(string pw)
     {
-        string test = "test";
-        Debug.Log(test);
-        PW = inputFieldPW.text;
-        Debug.Log(PW);
+        PW = pw;
     }
 
     public void MakeLogin()
@@ -39,5 +99,17 @@ public class Login : MonoBehaviour
         loginCanvas.SetActive(false);
         mainCamera.transform.position = playCameraPosition;
         uiCanvas.SetActive(true);
+    }
+
+    public void TryLogin()
+    {
+        StartCoroutine(TempFunc());
+    }
+
+    public IEnumerator TempFunc()
+    {
+        state = State.LOGINGING;
+        yield return new WaitForSeconds(2.0f);
+        state = State.LOGINED;
     }
 }
