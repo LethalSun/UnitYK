@@ -108,12 +108,11 @@ public class DeployShip : MonoBehaviour
 
         if (selectedShip == null)
         {
-            Debug.Log("ship null");
             selectedShip = ClickedShip();
-            selectedShip.GetComponent<ShipProperties>().isDeployed = false;
+            
             return;
         }
-
+        selectedShip.GetComponent<ShipProperties>().isDeployed = false;
         CheckRotation();
         target = GetCursorObject();
 
