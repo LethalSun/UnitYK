@@ -5,6 +5,7 @@ using UnityEngine;
 public class ShipProperties : MonoBehaviour
 {
     public int shipId;
+    public int shipUID;
     public float shipOffset;
     public bool isEncounterEdge = false;
     public bool isEncounterShip = false;

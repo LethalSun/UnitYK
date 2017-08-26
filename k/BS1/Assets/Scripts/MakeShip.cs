@@ -14,6 +14,7 @@ public class MakeShip : MonoBehaviour {
     {
         int shipIdx = 0;
 
+        int shipUID = 0;
         ShipDock = new List<GameObject>();
 
         foreach (int elem in shipNumber)
@@ -22,6 +23,8 @@ public class MakeShip : MonoBehaviour {
             {
                 GameObject newShip = Instantiate(shipPrefab[shipIdx]) as GameObject;
                 newShip.transform.position = gameObject.transform.position;
+                newShip.GetComponent<ShipProperties>().shipUID = shipUID;
+                ++shipUID;
                 ShipDock.Add(newShip);  
             }
             ++shipIdx;

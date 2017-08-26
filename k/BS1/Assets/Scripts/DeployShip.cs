@@ -6,10 +6,13 @@ public class DeployShip : MonoBehaviour
 {
 
     private GameObject selectedShip = null;
+
     public int shipNum = 0;
     public int shipNum2 = 0;
+
     private GameObject target;
     private GameObject targetBefore;
+
     public GameObject initTile;
     private int rotaion = 1;
 
@@ -57,7 +60,6 @@ public class DeployShip : MonoBehaviour
                 target = hit.collider.gameObject;
                 if (target.layer == 29)
                 {
-                    targetBefore = target;
                     return target;
                 }
                 target = null;
@@ -138,7 +140,6 @@ public class DeployShip : MonoBehaviour
 
                 selectedShip.GetComponent<ShipProperties>().isDeployed = true;
 
-                target.GetComponent<ShipManager>().shipOnTheTile = selectedShip;
                 var randerer = selectedShip.GetComponent<ChangeShipColor>().rs;
                 var mat = selectedShip.GetComponent<ChangeShipColor>().mats;
 
@@ -201,25 +202,26 @@ public class DeployShip : MonoBehaviour
     {
         if (Input.GetAxis("Mouse ScrollWheel") < 0)
         {
-            Debug.Log("wheel" + rotaion);
+            //TODO: 로그 지우기
+            //Debug.Log("wheel" + rotaion);
             if (rotaion == 4)
             {
                 rotaion = 0;
             }
 
             ++rotaion;
-            Debug.Log("wheel" + rotaion);
+            //Debug.Log("wheel" + rotaion);
         }
         if (Input.GetAxis("Mouse ScrollWheel") > 0)
         {
-            Debug.Log("wheel" + rotaion);
+            //Debug.Log("wheel" + rotaion);
             if (rotaion == 1)
             {
                 rotaion = 5;
             }
 
             --rotaion;
-            Debug.Log("wheel" + rotaion);
+            //Debug.Log("wheel" + rotaion);
         }
     }
 }
