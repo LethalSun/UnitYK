@@ -109,7 +109,8 @@ public class Login : MonoBehaviour
     public IEnumerator TempFunc()
     {
         state = State.LOGINGING;
-        yield return new WaitForSeconds(2.0f);
+        
+        yield return GetComponent<HTTPLib>().RequestHttpCreateUser(ID, PW);
         state = State.LOGINED;
     }
 }

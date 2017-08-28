@@ -49,6 +49,15 @@ public class HTTPLib : MonoBehaviour {
 
         var responseJson = JsonUtility.FromJson<RES_LOGIN>(request.downloadHandler.ToString());
 
+        if(responseJson.Result == (short)ERROR_CODE.NONE)
+        {
+            Debug.Log(responseJson.AuthToken);
+        }
+        else
+        {
+            Debug.Log("Fail");
+        }
+
     }
 
     public IEnumerator RequestHttpCreateUser(string id, string pw)
@@ -62,11 +71,23 @@ public class HTTPLib : MonoBehaviour {
 
         var request = RequestHttp<REQ_CREATE_USER>(pkt, reqCreateUser);
 
+        Debug.Log(request.ToString());
+
         yield return request.Send();
 
         Debug.Log("Status Code: " + request.responseCode);
+        Debug.Log(request.downloadHandler.text);
+        var responseJson = JsonUtility.ToJson(request.downloadHandler.text);
+        var res = JsonUtility.FromJson<RES_CREATE_USER>(responseJson);
+        if (res.Result == (short)ERROR_CODE.NONE)
+        {
+            Debug.Log("Sucess");
+        }
+        else
+        {
+            Debug.Log("Fail");
+        }
 
-        var responseJson = JsonUtility.FromJson<RES_LOGIN>(request.downloadHandler.ToString());
     }
 
     public IEnumerator RequestHttpLogout(string id, string tok)
@@ -85,19 +106,30 @@ public class HTTPLib : MonoBehaviour {
 
         Debug.Log("Status Code: " + request.responseCode);
 
-        var responseJson = JsonUtility.FromJson<RES_LOGIN>(request.downloadHandler.ToString());
+        var responseJson = JsonUtility.FromJson<RES_LOGOUT>(request.downloadHandler.ToString());
+        if (responseJson.Result == (short)ERROR_CODE.NONE)
+        {
+            Debug.Log("Sucess");
+        }
+        else
+        {
+            Debug.Log("Fail");
+        }
     }
 
     public UnityWebRequest RequestHttp<REQUEST_T>(REQUEST_T reqPacket, string reqAPI)
     {
         var api = "http://" + address + reqAPI;
         var requestJson = JsonUtility.ToJson(reqPacket);
-
+        Debug.Log(api+ requestJson);
         var request = new UnityWebRequest(api, "POST");
         byte[] contentRaw = Encoding.UTF8.GetBytes(requestJson);
-        request.uploadHandler = (UploadHandler)new UploadHandlerRaw(contentRaw);
+        Debug.Log(contentRaw.ToString());
+        var sss = (UploadHandler)new UploadHandlerRaw(contentRaw);
+        sss.contentType = "application/json";
+        request.uploadHandler = sss;
         request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
-        request.SetRequestHeader("Content-Type", "application/json");
+        //request.SetRequestHeader("Content-Type", "application/json");
 
         return request;
 
