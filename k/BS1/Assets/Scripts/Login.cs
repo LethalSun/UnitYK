@@ -109,8 +109,21 @@ public class Login : MonoBehaviour
     public IEnumerator TempFunc()
     {
         state = State.LOGINGING;
-        
-        yield return GetComponent<HTTPLib>().RequestHttpCreateUser(ID, PW);
-        state = State.LOGINED;
+
+        bool isOK = false;
+        yield return GetComponent<HTTPLib>().RequestHttpLoginOrCreateUser(ID, PW,(L)=> { isOK = L; });
+
+        if(isOK == false)
+        {
+            state = State.NOTLOGINED;
+        }
+        else
+        {
+            state = State.LOGINED;
+        }
+
+        //state = State.LOGINED;
     }
+
+
 }

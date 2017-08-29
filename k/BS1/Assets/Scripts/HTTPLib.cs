@@ -8,7 +8,7 @@ public class HTTPLib : MonoBehaviour {
 
     public string address;
 
-    bool isLogin;
+    bool isLogin = false;
 
     public enum ERROR_CODE
     {
@@ -31,7 +31,23 @@ public class HTTPLib : MonoBehaviour {
         REQ_LOAD_BASIC_GAME_DATA_INVALID_ID = 132,
     }
 
-    public IEnumerator RequestHttpLogin(string id ,string pw)
+    public IEnumerator RequestHttpLoginOrCreateUser(string id, string pw, System.Action<bool> callback)
+    {
+        bool isOK = false;
+
+        yield return RequestHttpLogin(id, pw,(x)=> { isOK = x; });
+
+        if(isOK == false)
+        {
+            yield return RequestHttpCreateUser(id, pw, (x) => { isOK = x; });
+            yield return RequestHttpLogin(id, pw, (x) => { isOK = x; });
+        }
+
+        callback(isOK);
+
+    }
+
+    public IEnumerator RequestHttpLogin(string id ,string pw, System.Action<bool> callback)
     {
 
         REQ_LOGIN pkt = new REQ_LOGIN();
@@ -45,22 +61,20 @@ public class HTTPLib : MonoBehaviour {
 
         yield return request.Send();
 
-        Debug.Log("Status Code: " + request.responseCode);
+        var res = JsonUtility.FromJson<RES_LOGIN>(request.downloadHandler.text);
 
-        var responseJson = JsonUtility.FromJson<RES_LOGIN>(request.downloadHandler.ToString());
-
-        if(responseJson.Result == (short)ERROR_CODE.NONE)
+        if (res.Result == (short)ERROR_CODE.NONE)
         {
-            Debug.Log(responseJson.AuthToken);
+            callback(true);
         }
         else
         {
-            Debug.Log("Fail");
+            callback(false);
         }
 
     }
 
-    public IEnumerator RequestHttpCreateUser(string id, string pw)
+    public IEnumerator RequestHttpCreateUser(string id, string pw, System.Action<bool> callback)
     {
         REQ_CREATE_USER pkt = new REQ_CREATE_USER();
         pkt.UserID = id;
@@ -71,21 +85,17 @@ public class HTTPLib : MonoBehaviour {
 
         var request = RequestHttp<REQ_CREATE_USER>(pkt, reqCreateUser);
 
-        Debug.Log(request.ToString());
-
         yield return request.Send();
 
-        Debug.Log("Status Code: " + request.responseCode);
-        Debug.Log(request.downloadHandler.text);
-        var responseJson = JsonUtility.ToJson(request.downloadHandler.text);
-        var res = JsonUtility.FromJson<RES_CREATE_USER>(responseJson);
+        var res = JsonUtility.FromJson<RES_CREATE_USER>(request.downloadHandler.text);
+
         if (res.Result == (short)ERROR_CODE.NONE)
         {
-            Debug.Log("Sucess");
+            callback(true);
         }
         else
         {
-            Debug.Log("Fail");
+            callback(false);
         }
 
     }
@@ -104,9 +114,8 @@ public class HTTPLib : MonoBehaviour {
 
         yield return request.Send();
 
-        Debug.Log("Status Code: " + request.responseCode);
+        var responseJson = JsonUtility.FromJson<RES_LOGOUT>(request.downloadHandler.text);
 
-        var responseJson = JsonUtility.FromJson<RES_LOGOUT>(request.downloadHandler.ToString());
         if (responseJson.Result == (short)ERROR_CODE.NONE)
         {
             Debug.Log("Sucess");
@@ -120,16 +129,20 @@ public class HTTPLib : MonoBehaviour {
     public UnityWebRequest RequestHttp<REQUEST_T>(REQUEST_T reqPacket, string reqAPI)
     {
         var api = "http://" + address + reqAPI;
+
         var requestJson = JsonUtility.ToJson(reqPacket);
-        Debug.Log(api+ requestJson);
+
         var request = new UnityWebRequest(api, "POST");
+
         byte[] contentRaw = Encoding.UTF8.GetBytes(requestJson);
-        Debug.Log(contentRaw.ToString());
+
         var sss = (UploadHandler)new UploadHandlerRaw(contentRaw);
+
         sss.contentType = "application/json";
+
         request.uploadHandler = sss;
+
         request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
-        //request.SetRequestHeader("Content-Type", "application/json");
 
         return request;
 
