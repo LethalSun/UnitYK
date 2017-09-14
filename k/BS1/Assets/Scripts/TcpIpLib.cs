@@ -1,15 +1,17 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
-using System;
 using System.Text;
 using UnityEngine;
 using Packet;
 
-public class TcpIpLib : MonoBehaviour
+public partial class TcpIpLib
 {
     int bufferSize = 131072;
     int headerSize = sizeof(int)*2;
+    System.Text.Encoding NetworkEncoding = System.Text.Encoding.ASCII;
     bool isConnected = false;
 
     Socket socket;
@@ -17,21 +19,18 @@ public class TcpIpLib : MonoBehaviour
     AsyncCallback sendCallback;
     Queue<PacketRaw> packetQueue;
 
-    // Use this for initialization
-    void Start()
+    private string ipAddress = "127.0.0.1";
+    private int portNum = 23452;
+
+    public TcpIpLib(string ipAddr,int port)
     {
+        ipAddress = ipAddr;
+        portNum = port;
+
+        recvCallback = new AsyncCallback(RecvCallback);
+        sendCallback = new AsyncCallback(SendCallback);
+
         initSocket();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        while (IsQueueEmpty() == false)
-        {
-            var packet = GetPacket();
-
-            packetProcessor.ProcessPacket(packet);
-        }
     }
 
     void OnApplicationQuit()
@@ -41,10 +40,14 @@ public class TcpIpLib : MonoBehaviour
 
     void initSocket()
     {
-        socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        recvCallback = new AsyncCallback(RecvCallback);
-        sendCallback = new AsyncCallback(SendCallback);
-        packetQueue = new Queue<PacketRaw>();
+        try
+        {
+            socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        }
+        catch(Exception ex)
+        {
+            Debug.LogError("socket init fail" + ex.Message);
+        }
     }
 
     public void CloseConnection()
@@ -62,15 +65,17 @@ public class TcpIpLib : MonoBehaviour
         return isConnected;
     }
 
-    public void Connect(string ip, int port)
+    public void Connect()
     {
         try
         {
-            socket.BeginConnect(ip, port, ConnectCallback, 0);
+            socket.BeginConnect(ipAddress, portNum, ConnectCallback, 0);
+            Debug.Log("Try to connect Server IP: " + ipAddress + " Port Number: " + portNum);
         }
-        catch
+        catch (SocketException ex)
         {
             isConnected = false;
+            Debug.LogAssertion(ex.ToString());
         }
     }
 
@@ -80,9 +85,12 @@ public class TcpIpLib : MonoBehaviour
         {
             socket.EndConnect(asyncResult);
             isConnected = true;
+            Debug.Log("Connected to Server IP: " + ipAddress + " Port Number: " + portNum);
         }
-        catch
+        catch(Exception ex)
         {
+            Debug.Log("Connection failed" + ex.Message);
+            isConnected = false;
             return;
         }
 
@@ -97,37 +105,14 @@ public class TcpIpLib : MonoBehaviour
             asyncRecvData);
     }
 
-    public bool IsQueueEmpty()
-    {
-        lock(this)
-        {
-            if(packetQueue.Count == 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
-
-    public PacketRaw GetPacket()
-    {
-        lock(this)
-        {
-            return packetQueue.Dequeue();
-        }
-    }
-
     public void SendPacket<T>(T data, PacketId pktID)
     {
         if (isConnected == false)
         {
+            Debug.LogAssertion("Not Connected! Send Packet Failed");
             return;
         }
 
-        //뉴 딜리트가센드 할때마다 일어나는게 문제가 될까?
         AsyncSendStateObject asyncSendData = new AsyncSendStateObject(socket);
 
         unsafe
@@ -152,6 +137,7 @@ public class TcpIpLib : MonoBehaviour
             }
 
             byte* bodySizeByte = (byte*)&bodysize;
+
             for(int i = 0; i<sizeof(int);++i)
             {
                 asyncSendData.buffer[i + sizeof(int)] = bodySizeByte[i];
@@ -188,6 +174,7 @@ public class TcpIpLib : MonoBehaviour
     {
         if(isConnected == false)
         {
+            Debug.LogAssertion("Not Connected! Recv Packet Failed");
             return;
         }
 
@@ -205,48 +192,46 @@ public class TcpIpLib : MonoBehaviour
         }
 
         #region parse raw packet
-        while(true)
+        while (true)
         {
             //헤더 조차 못받아 왔다면 더 기다린다.
-            if(asyncRecvData.recvSize < headerSize)
+            if (asyncRecvData.recvSize < headerSize)
             {
                 break;
             }
 
-            unsafe
+
+            PacketHeader packetHeader = new PacketHeader();
+
+            var id = BitConverter.ToInt32(asyncRecvData.buffer, 0);
+            var bodySize = BitConverter.ToInt32(asyncRecvData.buffer, 4);
+
+            var packetSize = headerSize + bodySize;
+            if (asyncRecvData.recvSize < headerSize + bodySize)
             {
-                fixed(byte* packetHeaderByte = &asyncRecvData.buffer[asyncRecvData.readPosition])
-                {
-                    PacketHeader* packetHeader = (PacketHeader*)packetHeaderByte;
-
-                    int packetSize = packetHeader->BodySize + headerSize;
-
-                    //헤더에 관련된 바디를 못받아 왔을때 더 기다린다.
-                    if(asyncRecvData.recvSize < packetSize)
-                    {
-                        break;
-                    }
-
-                    PacketRaw packetRaw = new PacketRaw();
-
-                    packetRaw.BodySize = packetHeader->BodySize;
-                    packetRaw.PecketID = packetHeader->PacketID;
-
-                    packetRaw.Data = Encoding.ASCII.GetString(
-                        asyncRecvData.buffer,
-                        asyncRecvData.readPosition + headerSize,
-                        packetHeader->BodySize);
-
-                    lock(this)
-                    {
-                        packetQueue.Enqueue(packetRaw);
-                    }
-
-                    asyncRecvData.readPosition += packetSize;
-                    asyncRecvData.recvSize -= packetSize;
-                }
+                break;
             }
+       
+            var bodyJson = NetworkEncoding.GetString(asyncRecvData.buffer, 8, bodySize);
+
+            PacketRaw packetRaw = new PacketRaw
+            {
+                PecketID = id,
+                BodySize = bodySize,
+                Data = bodyJson
+            };
+
+            Debug.Log("Receive Packet(id = " + id + " ,bodySize = " + bodySize);
+
+            lock (this)
+            {
+                packetQueue.Enqueue(packetRaw);
+            }
+
+            asyncRecvData.readPosition += packetSize;
+            asyncRecvData.recvSize -= packetSize;
         }
+        
 
         #endregion
 
@@ -266,6 +251,15 @@ public class TcpIpLib : MonoBehaviour
             SocketFlags.None,
             recvCallback,
             asyncRecvData);
+    }
+
+    void InvokePacketEvent(PacketRaw packetRaw)
+    {
+        switch ((PacketId)packetRaw.PecketID)
+        {
+            case PacketId.ID_GAMESEVER_RES_GAMESERVER_ENTER:
+                break;
+        }
     }
 
     void SendCallback(IAsyncResult asyncResult)
@@ -298,7 +292,10 @@ public class TcpIpLib : MonoBehaviour
                 SocketFlags.Truncated,
                 SendCallback,
                 asyncSendData);
+
+            Debug.Log("Send additionally");
         }
+        Debug.Log("Send Complete");
     }
 
     void ProcessException(SocketException ex)
