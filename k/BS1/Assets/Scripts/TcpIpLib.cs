@@ -28,7 +28,7 @@ public class TcpIpLib : MonoBehaviour
     {
         while (IsQueueEmpty() == false)
         {
-            var packet = networkTcpIp.GetPacket();
+            var packet = GetPacket();
 
             packetProcessor.ProcessPacket(packet);
         }
