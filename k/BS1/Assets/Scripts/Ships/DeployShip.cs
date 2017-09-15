@@ -151,6 +151,7 @@ public class DeployShip : MonoBehaviour
                 selectedShip.GetComponent<ShipProperties>().isDeployed = true;
                 selectedShip = null;
                 shipNum = 0;
+                target = targetBefore = initTile;
             }
         }
     }

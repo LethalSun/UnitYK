@@ -9,9 +9,6 @@ using Packet;
 
 public partial class TcpIpLib
 {
-    int bufferSize = 131072;
-    int headerSize = sizeof(int)*2;
-    System.Text.Encoding NetworkEncoding = System.Text.Encoding.ASCII;
     bool isConnected = false;
 
     Socket socket;
@@ -19,17 +16,11 @@ public partial class TcpIpLib
     AsyncCallback sendCallback;
     Queue<PacketRaw> packetQueue;
 
-    private string ipAddress = "127.0.0.1";
-    private int portNum = 23452;
+    public string ipAddress;
+    public int portNum;
 
-    public TcpIpLib(string ipAddr,int port)
+    public TcpIpLib()
     {
-        ipAddress = ipAddr;
-        portNum = port;
-
-        recvCallback = new AsyncCallback(RecvCallback);
-        sendCallback = new AsyncCallback(SendCallback);
-
         initSocket();
     }
 
@@ -40,6 +31,9 @@ public partial class TcpIpLib
 
     void initSocket()
     {
+        recvCallback = new AsyncCallback(RecvCallback);
+        sendCallback = new AsyncCallback(SendCallback);
+
         try
         {
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -65,8 +59,11 @@ public partial class TcpIpLib
         return isConnected;
     }
 
-    public void Connect()
+    public void Connect(string ipAddr = "127.0.0.1",int port = 23452)
     {
+        ipAddress = ipAddr;
+        portNum = port;
+
         try
         {
             socket.BeginConnect(ipAddress, portNum, ConnectCallback, 0);
@@ -94,7 +91,7 @@ public partial class TcpIpLib
             return;
         }
 
-        AsyncRecvStateObject asyncRecvData = new AsyncRecvStateObject(bufferSize, socket);
+        AsyncRecvStateObject asyncRecvData = new AsyncRecvStateObject(NetworkProperty.BufferSize, socket);
 
         socket.BeginReceive(
             asyncRecvData.buffer,
@@ -123,8 +120,8 @@ public partial class TcpIpLib
             int packetID = (int)pktID;
             int bodysize = dataJson.Length;
 
-            asyncSendData.buffer = new byte[headerSize+ bodysize];
-            asyncSendData.sendSize = headerSize + bodysize;
+            asyncSendData.buffer = new byte[NetworkProperty.PacketHeaderSize+ bodysize];
+            asyncSendData.sendSize = NetworkProperty.PacketHeaderSize + bodysize;
             #endregion
 
             #region pack data
@@ -195,7 +192,7 @@ public partial class TcpIpLib
         while (true)
         {
             //헤더 조차 못받아 왔다면 더 기다린다.
-            if (asyncRecvData.recvSize < headerSize)
+            if (asyncRecvData.recvSize < NetworkProperty.PacketHeaderSize)
             {
                 break;
             }
@@ -206,13 +203,13 @@ public partial class TcpIpLib
             var id = BitConverter.ToInt32(asyncRecvData.buffer, 0);
             var bodySize = BitConverter.ToInt32(asyncRecvData.buffer, 4);
 
-            var packetSize = headerSize + bodySize;
-            if (asyncRecvData.recvSize < headerSize + bodySize)
+            var packetSize = NetworkProperty.PacketHeaderSize + bodySize;
+            if (asyncRecvData.recvSize < NetworkProperty.PacketHeaderSize + bodySize)
             {
                 break;
             }
        
-            var bodyJson = NetworkEncoding.GetString(asyncRecvData.buffer, 8, bodySize);
+            var bodyJson = NetworkProperty.NetworkEncoding.GetString(asyncRecvData.buffer, 8, bodySize);
 
             PacketRaw packetRaw = new PacketRaw
             {

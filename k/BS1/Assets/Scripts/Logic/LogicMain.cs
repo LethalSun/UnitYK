@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TileInfos : MonoBehaviour
-{
+public class LogicMain : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {

@@ -57,6 +57,7 @@ public class DeployBomb : MonoBehaviour {
 
                 selectedBomb.GetComponent<BombProperty>().isDeployed = true;
                 selectedBomb = null;
+                targetBefore = target = initTile;
             }
         }
 
