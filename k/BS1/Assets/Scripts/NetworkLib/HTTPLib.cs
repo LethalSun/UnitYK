@@ -31,23 +31,28 @@ public class HTTPLib : MonoBehaviour {
         REQ_LOAD_BASIC_GAME_DATA_INVALID_ID = 132,
     }
 
-    public IEnumerator RequestHttpLoginOrCreateUser(string id, string pw, System.Action<bool> callback)
+    public IEnumerator RequestHttpLoginOrCreateUser(string id, string pw, System.Action<string> callback)
     {
-        bool isOK = false;
+        string auth ="";
 
-        yield return RequestHttpLogin(id, pw,(x)=> { isOK = x; });
+        yield return RequestHttpLogin(id, pw,(x)=> { auth = x; });
 
-        if(isOK == false)
+        if(auth.Equals(""))
         {
-            yield return RequestHttpCreateUser(id, pw, (x) => { isOK = x; });
-            yield return RequestHttpLogin(id, pw, (x) => { isOK = x; });
+            bool isOk = false;
+            yield return RequestHttpCreateUser(id, pw, (x) => { isOk = x; });
+            if(isOk == true)
+            {
+
+            }
+            yield return RequestHttpLogin(id, pw, (x) => { isOk = x; });
         }
 
         callback(isOK);
 
     }
 
-    public IEnumerator RequestHttpLogin(string id ,string pw, System.Action<bool> callback)
+    public IEnumerator RequestHttpLogin(string id ,string pw, System.Action<string> callback)
     {
 
         REQ_LOGIN pkt = new REQ_LOGIN();
@@ -65,11 +70,11 @@ public class HTTPLib : MonoBehaviour {
 
         if (res.Result == (short)ERROR_CODE.NONE)
         {
-            callback(true);
+            callback(res.AuthToken);
         }
         else
         {
-            callback(false);
+            callback("");
         }
 
     }
