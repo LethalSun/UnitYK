@@ -59,6 +59,30 @@ public partial class TcpIpLib
         return isConnected;
     }
 
+    public bool IsRecvPacketQueueEmpty()
+    {
+        lock(this)
+        {
+            if (packetQueue.Count == 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+    }
+
+    public PacketRaw GetPacket()
+    {
+        lock(this)
+        {
+            return packetQueue.Dequeue();
+        }
+    }
+
     public void Connect(string ipAddr = "127.0.0.1",int port = 23452)
     {
         ipAddress = ipAddr;

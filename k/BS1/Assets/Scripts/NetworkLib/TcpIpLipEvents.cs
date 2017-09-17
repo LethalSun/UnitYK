@@ -11,7 +11,7 @@ public partial class TcpIpLib
     public event Action<Packet.GAMESEVER_RES_BOMB> OnBomoRes = delegate { };
     public event Action<Packet.GAMESEVER_NTF_BOMB> OnBombNtf = delegate { };
     public event Action<Packet.GAMESEVER_NTF_GAMEND> OnGameEndNtf = delegate { };
-    public event Action<Packet.GAMSERVER_RES_USER_HEARTBEAT> OnHeartBeadRes = delegate { };
+    public event Action<Packet.GAMSERVER_RES_USER_HEARTBEAT> OnHeartBeatRes = delegate { };
     public event Action<Packet.GAMSERVER_RES_USER_LOGOUT> OnLogoutRes = delegate { };
     public event Action<Packet.GAMSERVER_NTF_USER_LOGOUT> OnLogoutNtf = delegate { };
 }

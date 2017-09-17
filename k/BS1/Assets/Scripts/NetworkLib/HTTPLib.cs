@@ -41,15 +41,21 @@ public class HTTPLib : MonoBehaviour {
         {
             bool isOk = false;
             yield return RequestHttpCreateUser(id, pw, (x) => { isOk = x; });
-            if(isOk == true)
+            if(isOk == false)
             {
-
+                callback("");
             }
-            yield return RequestHttpLogin(id, pw, (x) => { isOk = x; });
+            else
+            {
+                yield return RequestHttpLogin(id, pw, (x) => { auth = x; });
+                
+            }
+            
         }
-
-        callback(isOK);
-
+        else
+        {
+            callback(auth);
+        }
     }
 
     public IEnumerator RequestHttpLogin(string id ,string pw, System.Action<string> callback)

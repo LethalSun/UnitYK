@@ -111,10 +111,10 @@ public class Login : MonoBehaviour
     {
         state = State.LOGINGING;
 
-        bool isOK = false;
+        string isOK = "";
         yield return GetComponent<HTTPLib>().RequestHttpLoginOrCreateUser(ID, PW,(L)=> { isOK = L; });
 
-        if(isOK == false)
+        if(isOK == "")
         {
             state = State.NOTLOGINED;
         }

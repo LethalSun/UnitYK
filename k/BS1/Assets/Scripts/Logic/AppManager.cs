@@ -51,6 +51,8 @@ public class AppManager : MonoBehaviour
     public string logingigStr;
     public string loginFailStr;
 
+    public int GameServerID;
+
     float accumulatedTime = 0.0f;
 
     public GameObject deployShipCanvas;

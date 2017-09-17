@@ -37,24 +37,29 @@ public class LogicMain : MonoBehaviour {
 
    public IEnumerator TryLogin(string id,string pw)
    {
-        string auth;
+        string auth = "";
 
         yield return httpNet.RequestHttpLoginOrCreateUser(id, pw, (L) => { auth = L; });
 
-        //Tcp에서 게임 서버 입장 요청
-
-        var pkt = new Packet.GAMESEVER_REQ_GAMESERVER_ENTER();
-
-        pkt.ID
-
-        if (isOK == false)
+        if(auth == "")
         {
+            Debug.Log("LoginServer Fail");
             AppManager.GetInstance().currentStateTrigger = AppManager.State.LOGIN_FAILED;
         }
         else
         {
-            AppManager.GetInstance().currentStateTrigger = AppManager.State.LOGINED_DEPLOY_SHIP;
+
+            var pkt = new Packet.GAMESEVER_REQ_GAMESERVER_ENTER();
+
+            pkt.ID = id;
+            pkt.AuthToken = auth;
+            pkt.GameServerID = AppManager.GetInstance().GameServerID;
+
+            NetworkManager.GetInstance().tcpipNetwork.SendPacket(pkt,Packet.PacketId.ID_GAMESEVER_REQ_GAMESERVER_ENTER);
         }
+
+        //Tcp에서 게임 서버 입장 요청
+
    }
 
 #endregion
