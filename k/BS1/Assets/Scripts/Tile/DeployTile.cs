@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class DeployTile : MonoBehaviour {
 
+    //TODO:각각의 2차원배열을 1차원 배열로 수정
     public GameObject[,] tiles;
     public GameObject tile;
     public GameObject[,] enemyTiles;

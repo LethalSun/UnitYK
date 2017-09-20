@@ -1,5 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using UnityEngine;
 
 public class NetworkManager : MonoBehaviour
@@ -14,6 +18,7 @@ public class NetworkManager : MonoBehaviour
         if (instance == null)
         {
             tcpipNetwork = new TcpIpLib();
+            //커넥트는 나중에 다른곳에서.
             tcpipNetwork.Connect();
             instance = this;
         }
@@ -52,6 +57,8 @@ public class NetworkManager : MonoBehaviour
         {
             case Packet.PacketId.ID_GAMESEVER_RES_GAMESERVER_ENTER:
                 {
+                    this.OnGameServerEnterRes.Invoke(JsonUtility.FromJson<Packet.GAMESEVER_RES_GAMESERVER_ENTER>(pkt.Data));
+
                     break;
                 }
             case Packet.PacketId.ID_GAMESEVER_NTF_NEW_USER:
@@ -102,6 +109,18 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
+    public event Action<Packet.GAMESEVER_RES_GAMESERVER_ENTER> OnGameServerEnterRes = delegate { };
+    public event Action<Packet.GAMESEVER_NTF_NEW_USER> OnNewUserNtf = delegate { };
+    public event Action<Packet.GAMESEVER_RES_GAMESERVER_INFO> OnGameServerInfoRes = delegate { };
+    public event Action<Packet.GAMESEVER_RES_SHIP_DEPLOY_INFO> OnShipDeployInfoRes = delegate { };
+    public event Action<Packet.GAMESEVER_RES_GAME_READY> OnGameReadyRes = delegate { };
+    public event Action<Packet.GAMESEVER_NTF_GAME_START> OnGameStartNtf = delegate { };
+    public event Action<Packet.GAMESEVER_RES_BOMB> OnBomoRes = delegate { };
+    public event Action<Packet.GAMESEVER_NTF_BOMB> OnBombNtf = delegate { };
+    public event Action<Packet.GAMESEVER_NTF_GAMEND> OnGameEndNtf = delegate { };
+    public event Action<Packet.GAMSERVER_RES_USER_HEARTBEAT> OnHeartBeatRes = delegate { };
+    public event Action<Packet.GAMSERVER_RES_USER_LOGOUT> OnLogoutRes = delegate { };
+    public event Action<Packet.GAMSERVER_NTF_USER_LOGOUT> OnLogoutNtf = delegate { };
 
 
 }
