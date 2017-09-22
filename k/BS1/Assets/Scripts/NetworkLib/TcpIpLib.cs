@@ -21,6 +21,7 @@ public partial class TcpIpLib
 
     public TcpIpLib()
     {
+        packetQueue = new Queue<PacketRaw>();
         initSocket();
     }
 
@@ -142,9 +143,9 @@ public partial class TcpIpLib
             string dataJson = JsonUtility.ToJson(data);
 
             int packetID = (int)pktID;
-            int bodysize = dataJson.Length;
+            int bodysize = dataJson.Length +1;
 
-            asyncSendData.buffer = new byte[NetworkProperty.PacketHeaderSize+ bodysize];
+            asyncSendData.buffer = new byte[NetworkProperty.PacketHeaderSize+ bodysize +1];
             asyncSendData.sendSize = NetworkProperty.PacketHeaderSize + bodysize;
             #endregion
 
@@ -166,9 +167,9 @@ public partial class TcpIpLib
 
             char[] bodyChar = dataJson.ToCharArray();
 
-            for(int i =0; i<bodysize;++i)
+            for(int i =0; i<bodysize -1;++i)
             {
-                asyncSendData.buffer[i + bodysize] = (byte)bodyChar[i];
+                asyncSendData.buffer[i + NetworkProperty.PacketHeaderSize] = (byte)bodyChar[i];
             }
 
             #endregion

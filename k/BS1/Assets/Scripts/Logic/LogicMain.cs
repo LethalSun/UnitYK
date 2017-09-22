@@ -40,7 +40,7 @@ public partial class LogicMain : MonoBehaviour {
 
         if(id.Length == 0 || pw.Length == 0)
         {
-            AppManager.GetInstance().currentStateTrigger = AppManager.State.LOGIN_FAILED;
+            //AppManager.GetInstance().currentStateTrigger = AppManager.State.LOGIN_FAILED;
             return;
         }
         else
@@ -58,7 +58,7 @@ public partial class LogicMain : MonoBehaviour {
         if(auth == "")
         {
             Debug.Log("LoginServer Fail");
-            AppManager.GetInstance().currentStateTrigger = AppManager.State.LOGIN_FAILED;
+            //AppManager.GetInstance().currentStateTrigger = AppManager.State.LOGIN_FAILED;
         }
         else
         {

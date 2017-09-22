@@ -10,16 +10,23 @@ public class NetworkManager : MonoBehaviour
 {
     public HTTPLib httpNetwork;
     public TcpIpLib tcpipNetwork;
-
     public static NetworkManager instance = null;
+
+    public string ipAddress;
+    public int portNum;
+
+    public enum TcpError
+    {
+        None = 0,
+    }
 
     private void Awake()
     {
         if (instance == null)
         {
             tcpipNetwork = new TcpIpLib();
-            //커넥트는 나중에 다른곳에서.
-            tcpipNetwork.Connect();
+            //TODO:커넥트는 나중에 다른곳에서.
+            tcpipNetwork.Connect(ipAddress, portNum);
             instance = this;
         }
         else if (instance != this)
