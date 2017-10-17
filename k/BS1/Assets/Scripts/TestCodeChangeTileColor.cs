@@ -18,9 +18,8 @@ public class TestCodeChangeTileColor : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if(this.gameObject.GetComponent<ShipOnTheTile>().ship == null)
-        {
-           
-            sh.GetComponent<MeshRenderer>().material.color = Color.clear;
+        { 
+            sh.GetComponent<MeshRenderer>().material.color = Color.cyan;
         }
         else if (this.gameObject.GetComponent<ShipOnTheTile>().ship.GetComponent<ShipProperties>().shipId == 1 )
         {

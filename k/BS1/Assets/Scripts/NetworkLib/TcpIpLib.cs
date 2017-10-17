@@ -131,7 +131,7 @@ public partial class TcpIpLib
     {
         if (isConnected == false)
         {
-            Debug.LogAssertion("Not Connected! Send Packet Failed");
+            Debug.Log("Not Connected! Send Packet Failed");
             return;
         }
 
@@ -144,11 +144,11 @@ public partial class TcpIpLib
 
             int packetID = (int)pktID;
             int bodysize = dataJson.Length +1;
-
+            //Debug.Log("bodysize =" + bodysize);
             asyncSendData.buffer = new byte[NetworkProperty.PacketHeaderSize+ bodysize +1];
             asyncSendData.sendSize = NetworkProperty.PacketHeaderSize + bodysize;
             #endregion
-
+            //Debug.Log("MakePacket");
             #region pack data
 
             byte* packetIdByte = (byte*)&packetID;
@@ -177,6 +177,7 @@ public partial class TcpIpLib
 
         try
         {
+            //Debug.Log("SendBeginPacket");
             socket.BeginSend(
                 asyncSendData.buffer,
                 0,
@@ -185,11 +186,14 @@ public partial class TcpIpLib
                 sendCallback,
                 asyncSendData);
 
+            Debug.Log("Send id = packetID = "+ pktID +  "bodySize = " + asyncSendData.buffer.Length);
         }
         catch(SocketException ex)
         {
             ProcessException(ex);
         }
+
+        //Debug.Log("SendEndPacket");
     }
 
     void RecvCallback(IAsyncResult asyncResult)
@@ -199,6 +203,8 @@ public partial class TcpIpLib
             Debug.LogAssertion("Not Connected! Recv Packet Failed");
             return;
         }
+
+        Debug.Log("=====================Recive Callback");
 
         AsyncRecvStateObject asyncRecvData = (AsyncRecvStateObject)asyncResult.AsyncState;
 
@@ -212,7 +218,7 @@ public partial class TcpIpLib
             ProcessException(ex);
             return;
         }
-
+        Debug.Log("=====================Recive Parse Start"+ asyncRecvData.recvSize);
         #region parse raw packet
         while (true)
         {
@@ -222,20 +228,19 @@ public partial class TcpIpLib
                 break;
             }
 
-
-            PacketHeader packetHeader = new PacketHeader();
-
-            var id = BitConverter.ToInt32(asyncRecvData.buffer, 0);
-            var bodySize = BitConverter.ToInt32(asyncRecvData.buffer, 4);
+            var id = BitConverter.ToInt32(asyncRecvData.buffer, asyncRecvData.readPosition+0);
+            var bodySize = BitConverter.ToInt32(asyncRecvData.buffer, asyncRecvData.readPosition+4);
 
             var packetSize = NetworkProperty.PacketHeaderSize + bodySize;
             if (asyncRecvData.recvSize < NetworkProperty.PacketHeaderSize + bodySize)
             {
                 break;
             }
-       
-            var bodyJson = NetworkProperty.NetworkEncoding.GetString(asyncRecvData.buffer, 8, bodySize);
 
+            Debug.Log("=====================Parse body size" + packetSize);
+
+            var bodyJson = NetworkProperty.NetworkEncoding.GetString(asyncRecvData.buffer, asyncRecvData.readPosition+8, bodySize);
+            Debug.Log("=====================Parse body size" + asyncRecvData.buffer);
             PacketRaw packetRaw = new PacketRaw
             {
                 PecketID = id,
@@ -265,14 +270,24 @@ public partial class TcpIpLib
         }
 
         #endregion
+        try
+        {
+            asyncRecvData.socket.BeginReceive(
+                asyncRecvData.buffer,
+                asyncRecvData.recvSize,
+                asyncRecvData.buffer.Length - asyncRecvData.recvSize,
+                SocketFlags.None,
+                recvCallback,
+                asyncRecvData);
+        }
+        catch(SocketException ex)
+        {
+            ProcessException(ex);
+            Debug.Log("Receive Reserve Error");
+        }
 
-        asyncRecvData.socket.BeginReceive(
-            asyncRecvData.buffer,
-            asyncRecvData.recvSize,
-            asyncRecvData.buffer.Length - asyncRecvData.recvSize,
-            SocketFlags.None,
-            recvCallback,
-            asyncRecvData);
+
+        Debug.Log("Receive Reserve");
     }
 
     void InvokePacketEvent(PacketRaw packetRaw)

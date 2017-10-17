@@ -22,7 +22,7 @@ public class TestCodeChangeETileColor : MonoBehaviour {
         if (this.gameObject.GetComponent<BombOnTheEnemyTile>().bomb == null)
         {
 
-            sh.GetComponent<MeshRenderer>().material.color = Color.clear;
+            sh.GetComponent<MeshRenderer>().material.color = Color.cyan;
         }
         else 
         {

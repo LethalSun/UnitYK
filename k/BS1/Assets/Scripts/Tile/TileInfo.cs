@@ -6,5 +6,6 @@ public class TileInfo : MonoBehaviour {
 
     public int rowNumber = 0;
     public int columnNumber = 0;
+    public int indexInList = 0;
   
 }

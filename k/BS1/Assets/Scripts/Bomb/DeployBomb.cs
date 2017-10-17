@@ -13,10 +13,13 @@ public class DeployBomb : MonoBehaviour {
 
     private GameObject target;
     private GameObject targetBefore;
-	// Use this for initialization
-	void Start ()
+
+    NetworkManager networkManager;
+    // Use this for initialization
+    void Start ()
     {
         targetBefore = initTile;
+        networkManager = NetworkManager.GetInstance();
     }
 	
 	// Update is called once per frame
@@ -56,7 +59,10 @@ public class DeployBomb : MonoBehaviour {
                 }
 
                 selectedBomb.GetComponent<BombProperty>().isDeployed = true;
+                selectedBomb.GetComponent<BombProperty>().tileIndex = target.GetComponent<TileInfo>().indexInList;
                 selectedBomb = null;
+                //TODO:여기서 서버에 보낸다.
+                SendBombReq();
                 targetBefore = target = initTile;
             }
         }
@@ -108,6 +114,26 @@ public class DeployBomb : MonoBehaviour {
 
     public void SelectBomb()
     {
+        if(AppManager.GetInstance().isMyTurn ==false)
+        {
+            return;
+        }
+
         makeBomb();
+    }
+
+    void SendBombReq()
+    {
+        var pkt = new Packet.GAMESEVER_REQ_BOMB();
+
+        AppManager appManager = AppManager.GetInstance();
+
+        pkt.ID = appManager.ID;
+
+        pkt.AuthToken = appManager.AuthToken;
+
+        pkt.BombedTile = target.GetComponent<TileInfo>().indexInList;
+
+        networkManager.tcpipNetwork.SendPacket(pkt,Packet.PacketId.ID_GAMESEVER_REQ_BOMB);
     }
 }

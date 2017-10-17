@@ -10,7 +10,7 @@ public class LoginStateManager : MonoBehaviour {
     GameObject deployShipCanvas;
     GameObject playCanvas;
     GameObject playEndCanvas;
-
+    GameObject findingGameCanvas;
     HTTPLib httpNet;
     TcpIpLib tcpNet;
     NetworkManager networkManager;
@@ -21,6 +21,7 @@ public class LoginStateManager : MonoBehaviour {
 
     float accumulatedTime = 0.0f;
 
+    bool loginStart = false;
     public void InitObject()
     {
         //초기화 Appmanager 에서 모두 각각의 오브젝트를 초기화시킨다.
@@ -31,6 +32,8 @@ public class LoginStateManager : MonoBehaviour {
         loginCanvas = appManager.loginCanvas;
 
         deployShipCanvas = appManager.deployShipCanvas;
+
+        findingGameCanvas = appManager.findingGameCanvas;
 
         playCanvas = appManager.playCanvas;
 
@@ -52,10 +55,12 @@ public class LoginStateManager : MonoBehaviour {
     {
         if(pkt.Result ==(int)NetworkManager.TcpError.None)
         {
+            Debug.Log("response arrived");
             MakeLogin();
         }
         else
         {
+            Debug.Log("response arrived but error");
             appManager.loginCanvasStatetext.text = appManager.loginFailStr;
             AuthToken = "";
         }
@@ -76,6 +81,7 @@ public class LoginStateManager : MonoBehaviour {
     public void MakeLogin()
     {
         appManager.currentState = AppManager.State.DEPLOY_STATE;
+        appManager.stateChaned = true;
         appManager.ID = ID;
         appManager.PW = PW;
         appManager.AuthToken = AuthToken;
@@ -87,7 +93,6 @@ public class LoginStateManager : MonoBehaviour {
 
     public void OnLoginButtenPushed()
     {
-        Debug.Log(ID + " " + PW + " Try Login");
         if (ID.Length == 0 || PW.Length == 0)
         {
             appManager.loginCanvasStatetext.text = appManager.loginFailStr;
@@ -95,6 +100,7 @@ public class LoginStateManager : MonoBehaviour {
         }
         else
         {
+            loginStart = true;
             StartCoroutine(TryLogin(ID, PW));
         }
 
@@ -103,8 +109,6 @@ public class LoginStateManager : MonoBehaviour {
     public IEnumerator TryLogin(string id, string pw)
     {
         string auth = "";
-
-        Debug.Log("Login Start");
 
         yield return httpNet.RequestHttpLoginOrCreateUser(id, pw, (L) => { auth = L; });
 
@@ -123,7 +127,7 @@ public class LoginStateManager : MonoBehaviour {
             pkt.ID = id;
             pkt.AuthToken = auth;
             pkt.GameServerID = AppManager.GetInstance().GameServerID;
-
+            
             NetworkManager.GetInstance().tcpipNetwork.SendPacket(pkt, Packet.PacketId.ID_GAMESEVER_REQ_GAMESERVER_ENTER);
         }
 
@@ -131,16 +135,19 @@ public class LoginStateManager : MonoBehaviour {
 
     void OnEnable()
     {
-        mainCamera.transform.position = new Vector3(0.0f, 0.0f, 0.0f);//appManager.loginCameraTransform.position;
+        mainCamera.transform.position = appManager.loginCameraTransform.position;
 
         mainCamera.transform.rotation = appManager.loginCameraTransform.rotation;
 
         loginCanvas.SetActive(true);
         appManager.loginCanvasStatetext.text = appManager.notLoginedStr;
+        loginStart = false;
 
         deployShipCanvas.SetActive(false);
 
         playCanvas.SetActive(false);
+
+        playEndCanvas.SetActive(false);
     }
 
     private void OnDisable()
@@ -152,8 +159,12 @@ public class LoginStateManager : MonoBehaviour {
 
     void Update () {
 
+        if(loginStart == false)
+        {
+            return;
+        }
         accumulatedTime += Time.deltaTime;
-        var logingigStr = appManager.logingigStr;
+        
         if (accumulatedTime <= 0.33f)
         {
             return;
@@ -163,14 +174,14 @@ public class LoginStateManager : MonoBehaviour {
             accumulatedTime = 0.0f;
         }
 
-        if (logingigStr.Length < 12)
+        if (appManager.logingigStr.Length < 12)
         {
-            logingigStr += ".";
+            appManager.logingigStr += ".";
         }
         else
         {
-            logingigStr = logingigStr.Substring(0, 7);
+            appManager.logingigStr = appManager.logingigStr.Substring(0, 8);
         }
-        appManager.loginCanvasStatetext.text = logingigStr;
+        appManager.loginCanvasStatetext.text = appManager.logingigStr;
     }
 }

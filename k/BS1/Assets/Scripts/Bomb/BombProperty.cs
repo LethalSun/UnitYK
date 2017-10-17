@@ -7,5 +7,6 @@ public class BombProperty : MonoBehaviour {
     public int bombUID;
     public bool isEncounterBomb = false;
     public bool isDeployed = false;
+    public int tileIndex = 0;
 	
 }

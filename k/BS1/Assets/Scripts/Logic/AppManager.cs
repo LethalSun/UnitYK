@@ -11,29 +11,6 @@ public class AppManager : MonoBehaviour
         PLAY_STATE,
         PLAY_END_STATE,
         size
-        ////로그인 과정에서 "로그인중 ..." 메세지를 갱신 
-        //LOGINGING = 1,
-        ////로그인이 실패하면 
-        //LOGIN_FAILED,
-        ////디플로이 형태로 카메라, ui변경
-        //LOGINED_DEPLOY_SHIP,
-        ////매치찾기로 카메라 ui변경
-        //LOGINED_MATCH_REQ,
-        ////게임 화면으로 카메라, ui변경 배 이동 불가능 하게 변경.
-        //LOGINED_GAME_START,
-        ////내 턴이므로 폭탄 배치 버튼 활성화
-        //LOGINED_GAME_MY_TURN,
-        ////내 턴이 아니므로 폭탄 배치 비활성화
-        //LOGINED_GAME_ENEMY_TURN,
-        ////게임 종료 화면으로 카메라, ui변경
-        //LOGINED_GAME_END,
-        ////내정보 확인 화면으로 카메라 ui 변경
-        ////TODO: 혹은 어딘가에 계속 띄워 놓는것도.
-        //LOGINED_CHECK_MY_INFO,
-        ////게임을 초기 설정으로 변경
-        //LOGOUTING,
-        ////1번만 실행되야 되는 동작들을 위한 스테이트
-        //TRIGGER_OFF_STATE,
     }
 
     public bool stateChaned = true;
@@ -46,7 +23,7 @@ public class AppManager : MonoBehaviour
 
     HTTPLib httpNet;
     TcpIpLib tcpNet;
-    NetworkManager NetworkManager;
+    NetworkManager netWorkManager;
 
     public GameObject mainCamera;
 
@@ -54,7 +31,9 @@ public class AppManager : MonoBehaviour
     public Transform loginCameraTransform;
     public Transform gamePlayCameraTranseform;
 
+    #region for login state object
     public GameObject loginCanvas;
+
     public InputField inputFieldID;
     public InputField inputFieldPW;
     public Text loginCanvasStatetext;
@@ -70,10 +49,38 @@ public class AppManager : MonoBehaviour
     public int GameServerID;
 
     float accumulatedTime = 0.0f;
+    #endregion
+
+    #region for deploy ship state object
 
     public GameObject deployShipCanvas;
+
+    public GameObject tileManager;
+
+    public GameObject deployer;
+
+    public Text gameStartButtontext;
+
+    public GameObject findingGameCanvas;
+
+    public string findingGameStr;
+
+    public Text cancleButtontext;
+    #endregion
+
+    #region for play state object
     public GameObject playCanvas;
+    #endregion
+
+    #region for play end state object
     public GameObject playEndCanvas;
+    #endregion
+
+    public bool isMyTurn;
+
+    public string gameEndMessage;
+
+    public Text PlayEndText;
 
     public static AppManager instance = null;
 
@@ -98,6 +105,9 @@ public class AppManager : MonoBehaviour
     {
         //TODO: 각각의 오브젝트 초기화. 싱글톤으로 구현된 클래스나, 앱매니져가 초기화 된후. 초기화 해야 하므로 start 에서 초기화.
         stateObject[(int)State.LOGIN_STATE].GetComponent<LoginStateManager>().InitObject();
+        stateObject[(int)State.DEPLOY_STATE].GetComponent<DeployStateManager>().InitObject();
+        stateObject[(int)State.PLAY_STATE].GetComponent<PlayStateManager>().InitObject();
+        stateObject[(int)State.PLAY_END_STATE].GetComponent<PlayEndStateManager>().InitObject();
         currentState = State.LOGIN_STATE;
     }
 
@@ -105,43 +115,14 @@ public class AppManager : MonoBehaviour
     {
         if(stateChaned)
         {
-            ChaneObject(currentState);
+            ChangeObject(currentState);
             stateChaned = false;
         }
-
-
-        //switch (currentState)
-        //{
-        //
-        //        // case State.LOGINGING:
-        //        //     OnLogining();
-        //        //     break;
-        //        // case State.LOGINED_DEPLOY_SHIP:
-        //        //     OnDeployShip();
-        //        //     break;
-        //        // case State.LOGINED_MATCH_REQ:
-        //        //     OnMatchReq();
-        //        //     break;
-        //        // case State.LOGINED_GAME_START:
-        //        //     OnGameStart();
-        //        //     break;
-        //        // case State.LOGINED_GAME_MY_TURN:
-        //        //     break;
-        //        // case State.LOGINED_GAME_ENEMY_TURN:
-        //        //     break;
-        //        // case State.LOGINED_GAME_END:
-        //        //     break;
-        //        // case State.LOGINED_CHECK_MY_INFO:
-        //        //     break;
-        //        // case State.LOGOUTING:
-        //        //     break;
-        //        // default:
-        //        //     break;
-        //}
+        //TODO: 로그인이 되면 일정 기간에 하트 비트를 보낸다.
 
     }
 
-    void ChaneObject(State curState)
+    void ChangeObject(State curState)
     {
         int size = (int)State.size;
         for (int state = 0; state < size; ++state)
@@ -170,90 +151,36 @@ public class AppManager : MonoBehaviour
         deployShipCanvas.SetActive(false);
         playCanvas.SetActive(false);
 
-        //currentStateTrigger = State.TRIGGER_OFF_STATE;
+        netWorkManager.OnGameServerInfoRes += OnGameServerInfo;
+        netWorkManager.OnNewUserNtf += OnNewUserNtf;
+        netWorkManager.OnLogoutRes += OnLogoutRes;
+        netWorkManager.OnLogoutNtf += OnLogoutNtf;
+        netWorkManager.OnHeartBeatRes += OnHeartBeatRes;
     }
 
-    void OnLogining()
+    void OnGameServerInfo(Packet.GAMESEVER_RES_GAMESERVER_INFO pkt)
     {
-        accumulatedTime += Time.deltaTime;
 
-        if (accumulatedTime <= 0.33f)
-        {
-            return;
-        }
-        else
-        {
-            accumulatedTime = 0.0f;
-        }
-
-        if (logingigStr.Length < 12)
-        {
-            logingigStr += ".";
-        }
-        else
-        {
-            logingigStr = logingigStr.Substring(0, 7);
-        }
-
-        loginCanvasStatetext.text = logingigStr;
     }
 
-    void OnLoginFailed()
+    void OnNewUserNtf(Packet.GAMESEVER_NTF_NEW_USER pkt)
     {
-        loginCanvasStatetext.text = loginFailStr;
+
     }
 
-    void OnDeployShip()
+    void OnLogoutNtf(Packet.GAMSERVER_NTF_USER_LOGOUT pkt)
     {
-        //카메라 배치와 유아이 교환
-        mainCamera.transform.position = shipDepolyCameraTransform.position;
-        mainCamera.transform.rotation = shipDepolyCameraTransform.rotation;
 
-        loginCanvas.SetActive(false);
-        loginCanvasStatetext.text = notLoginedStr;
-
-        deployShipCanvas.SetActive(true);
-
-
-        playCanvas.SetActive(false);
-
-
-        //currentStateTrigger = State.TRIGGER_OFF_STATE;
     }
 
-    void OnMatchReq()
+    void OnLogoutRes(Packet.GAMSERVER_RES_USER_LOGOUT pkt)
     {
-       // currentStateTrigger = State.TRIGGER_OFF_STATE;
+
     }
 
-    void OnGameStart()
+    void OnHeartBeatRes(Packet.GAMSERVER_RES_USER_HEARTBEAT pkt)
     {
-        //currentStateTrigger = State.TRIGGER_OFF_STATE;
-    }
 
-    void OnGameMyturn()
-    {
-        //currentStateTrigger = State.TRIGGER_OFF_STATE;
-    }
-
-    void OnGameEnemyTurn()
-    {
-        //currentStateTrigger = State.TRIGGER_OFF_STATE;
-    }
-
-    void OnGameEnd()
-    {
-        //currentStateTrigger = State.TRIGGER_OFF_STATE;
-    }
-
-    void OnCheckMyInfo()
-    {
-        //currentStateTrigger = State.TRIGGER_OFF_STATE;
-    }
-
-    void OnLogout()
-    {
-        //currentStateTrigger = State.TRIGGER_OFF_STATE;
     }
 }
 

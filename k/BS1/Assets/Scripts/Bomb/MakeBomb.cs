@@ -24,4 +24,20 @@ public class MakeBomb : MonoBehaviour {
         }
 	}
 
+    public void ResetObject()
+    {
+        int tileNum = tileRow * tileColumn;
+        for (int i = 0; i < tileNum; ++i)
+        {
+            bombStorage[i].transform.position = gameObject.transform.position;
+
+            bombStorage[i].GetComponent<BombProperty>().isDeployed = false;
+
+            bombStorage[i].GetComponent<BombProperty>().isEncounterBomb = false;
+
+            bombStorage[i].GetComponent<BombProperty>().tileIndex = 0;
+
+        }
+    }
+
 }

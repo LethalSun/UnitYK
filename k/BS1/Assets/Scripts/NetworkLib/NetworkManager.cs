@@ -18,6 +18,10 @@ public class NetworkManager : MonoBehaviour
     public enum TcpError
     {
         None = 0,
+        TimeOut = 1,
+        Hit = 2,
+        Win = 3,
+        MyTurn = 4,
     }
 
     private void Awake()
@@ -56,6 +60,12 @@ public class NetworkManager : MonoBehaviour
 
             InvokeRecvPacketEvent(recvPacket);
         }
+
+        if(tcpipNetwork.IsConnected() == false)
+        {
+            Debug.Log("disconnect");
+        }
+
     }
 
     private void InvokeRecvPacketEvent(Packet.PacketRaw pkt)
@@ -64,7 +74,8 @@ public class NetworkManager : MonoBehaviour
         {
             case Packet.PacketId.ID_GAMESEVER_RES_GAMESERVER_ENTER:
                 {
-                    this.OnGameServerEnterRes.Invoke(JsonUtility.FromJson<Packet.GAMESEVER_RES_GAMESERVER_ENTER>(pkt.Data));
+                    this.OnGameServerEnterRes.Invoke(
+                        JsonUtility.FromJson<Packet.GAMESEVER_RES_GAMESERVER_ENTER>(pkt.Data));
 
                     break;
                 }
@@ -78,26 +89,38 @@ public class NetworkManager : MonoBehaviour
                 }
             case Packet.PacketId.ID_GAMESEVER_RES_SHIP_DEPLOY_INFO:
                 {
+                    this.OnShipDeployInfoRes.Invoke(
+                        JsonUtility.FromJson<Packet.GAMESEVER_RES_SHIP_DEPLOY_INFO>(pkt.Data));
                     break;
                 }
             case Packet.PacketId.ID_GAMESEVER_RES_GAME_READY:
                 {
+                    this.OnGameReadyRes.Invoke(
+                        JsonUtility.FromJson<Packet.GAMESEVER_RES_GAME_READY>(pkt.Data));
                     break;
                 }
             case Packet.PacketId.ID_GAMESEVER_NTF_GAME_START:
                 {
+                    this.OnGameStartNtf.Invoke(
+                        JsonUtility.FromJson<Packet.GAMESEVER_NTF_GAME_START>(pkt.Data));
                     break;
                 }
             case Packet.PacketId.ID_GAMESEVER_RES_BOMB:
                 {
+                    this.OnBomoRes.Invoke(
+                        JsonUtility.FromJson<Packet.GAMESEVER_RES_BOMB>(pkt.Data));
                     break;
                 }
             case Packet.PacketId.ID_GAMESEVER_NTF_BOMB:
                 {
+                    this.OnBombNtf.Invoke(
+                        JsonUtility.FromJson<Packet.GAMESEVER_NTF_BOMB>(pkt.Data));
                     break;
                 }
             case Packet.PacketId.ID_GAMESEVER_NTF_GAMEND:
                 {
+                    this.OnGameEndNtf.Invoke(
+                        JsonUtility.FromJson<Packet.GAMESEVER_NTF_GAMEND>(pkt.Data));
                     break;
                 }
             case Packet.PacketId.ID_GAMSERVER_RES_USER_HEARTBEAT:

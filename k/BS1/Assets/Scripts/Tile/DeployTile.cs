@@ -20,7 +20,7 @@ public class DeployTile : MonoBehaviour {
 
 
     // Use this for initialization
-    void Start () {
+    void Awake () {
 
         tiles = new GameObject[tileNumX * tileNumZ];
         enemyTiles = new GameObject[tileNumX * tileNumZ];
@@ -39,22 +39,14 @@ public class DeployTile : MonoBehaviour {
                 tiles[tileNumZ * x + z].transform.position = new Vector3(posX, 10.0f, posZ);
                 tiles[tileNumZ * x + z].GetComponent<TileInfo>().rowNumber = x;
                 tiles[tileNumZ * x + z].GetComponent<TileInfo>().columnNumber = z;
+                tiles[tileNumZ * x + z].GetComponent<TileInfo>().indexInList = tileNumZ * x + z;
                 posZ += tileOffsetZ;
 
                 enemyTiles[tileNumZ * x + z] = Instantiate(enemyTile) as GameObject;
                 enemyTiles[tileNumZ * x + z].transform.position = new Vector3(posEx, 10.0f, posEz);
                 enemyTiles[tileNumZ * x + z].GetComponent<TileInfo>().rowNumber = x;
                 enemyTiles[tileNumZ * x + z].GetComponent<TileInfo>().columnNumber = z;
-
-                //TODO: 테스트 코드 나중에 값을 받아와서 채워넣어야 함.
-                if(Random.Range(0,2) == 0)
-                {
-                    enemyTiles[tileNumZ * x + z].GetComponent<EnemyTileProperty>().isThereEnemyShip = false;
-                }
-                else
-                {
-                    enemyTiles[tileNumZ * x + z].GetComponent<EnemyTileProperty>().isThereEnemyShip = true;
-                }
+                enemyTiles[tileNumZ * x + z].GetComponent<TileInfo>().indexInList = tileNumZ * x + z;
 
                 posEz += tileOffsetZ;
 
@@ -66,5 +58,21 @@ public class DeployTile : MonoBehaviour {
             posEz = startEnemyTileY;
         }
 	}
+
+    public void ResetObject()
+    {
+        int tileNum = tileNumX * tileNumZ;
+
+        for (int i = 0; i< tileNum; ++i)
+        {
+            tiles[i].GetComponent<ShipOnTheTile>().ship = null;
+
+            enemyTiles[i].GetComponent<EnemyTileProperty>().isThereEnemyShip = false;
+
+            enemyTiles[i].GetComponent<EnemyTileProperty>().isBombDeployed = false;
+
+            enemyTiles[i].GetComponent<BombOnTheEnemyTile>().bomb = null;
+        }
+    }
 
 }

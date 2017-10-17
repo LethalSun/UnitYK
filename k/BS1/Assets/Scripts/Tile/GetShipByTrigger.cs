@@ -21,7 +21,6 @@ public class GetShipByTrigger : MonoBehaviour {
     {
         if (other.gameObject.layer == 29)
         {
-            var a = this.gameObject.GetComponent<ShipOnTheTile>().ship.GetComponent<ShipProperties>();
             if (this.gameObject.GetComponent<ShipOnTheTile>().ship.GetComponent<ShipProperties>().shipUID == 
                 other.gameObject.GetComponent<ShipProperties>().shipUID)
             {

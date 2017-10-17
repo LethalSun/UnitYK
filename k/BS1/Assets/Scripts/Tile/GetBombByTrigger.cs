@@ -12,8 +12,6 @@ public class GetBombByTrigger : MonoBehaviour {
             {
                 this.gameObject.GetComponent<BombOnTheEnemyTile>().bomb = other.gameObject;
             }
-
-            //Debug.Log("ship in");
         }
     }
 
@@ -26,8 +24,6 @@ public class GetBombByTrigger : MonoBehaviour {
             { 
                 this.gameObject.GetComponent<BombOnTheEnemyTile>().bomb = null;
             }
-
-            //Debug.Log("ship out");
         }
     }
 }

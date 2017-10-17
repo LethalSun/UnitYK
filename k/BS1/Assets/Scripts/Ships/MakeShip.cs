@@ -30,5 +30,18 @@ public class MakeShip : MonoBehaviour {
             ++shipIdx;
         }
 	}
-	
+
+    public void ResetObject()
+    {
+        for (int i = 0; i < ShipDock.Count;++i)
+        {
+            ShipDock[i].transform.position = gameObject.transform.position;
+
+            ShipDock[i].GetComponent<ShipProperties>().isDeployed = false;
+
+            ShipDock[i].GetComponent<ShipProperties>().isEncounterEdge = false;
+
+            ShipDock[i].GetComponent<ShipProperties>().isEncounterShip = false;
+        }
+    }
 }
